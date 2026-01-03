@@ -4,7 +4,7 @@ const MBTI_TYPES = [
 ];
 
 const LOCATIONS = ["교실", "동아리실", "운동장", "옥상", "교외", "체육관",
-    "기숙사", "실습실", "미술실", "음악실"
+    "기숙사", "실습실", "미술실", "음악실","집"
 ];
 
 const COMPATIBILITY = {
@@ -1615,4 +1615,5 @@ function drawRelationshipGraph() {
         });
         if (!found) tooltip.style.display = 'none';
     };
+
 }
