@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학원물 시뮬레이터</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm z-10 shrink-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center">
+                    <i class="fas fa-school text-indigo-600 text-2xl mr-3"></i>
+                    <h1 class="text-xl font-bold text-gray-900">학원물 시뮬레이터 <a href="https://x.com/bb_uu_t" target="_blank"><span class="text-xs font-normal text-slate-500 dark:text-slate-400 ml-1">@bb_uu_t</span></a></h1>
+                </div>
+                <nav class="flex space-x-4">
+                    <button onclick="switchTab('roster')" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50 transition" id="btn-roster">
+                        <i class="fas fa-users mr-1"></i> 명단 관리
+                    </button>
+                    <button onclick="switchTab('simulation')" class="px-3 py-2 rounded-md text-sm font-medium text-indigo-600 bg-indigo-50 transition" id="btn-simulation">
+                        <i class="fas fa-play mr-1"></i> 실행/로그
+                    </button>
+                    <button onclick="switchTab('relationship')" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50 transition" id="btn-relationship">
+                        <i class="fas fa-project-diagram mr-1"></i> 관계도
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-hidden relative bg-gray-50">
+        
+        <!-- Tab 1: Roster Management -->
+        <div id="roster" class="tab-content h-full overflow-hidden p-6">
+            <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 h-full overflow-y-auto pb-20">
+                <!-- Input Form & Settings -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- Character Add -->
+                    <div class="glass-panel rounded-xl p-6">
+                        <h2 class="text-lg font-bold mb-4 flex items-center"><i class="fas fa-user-plus mr-2 text-indigo-500"></i> 학생 등록</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">이름</label>
+                                <input type="text" id="char-name" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border p-2" placeholder="이름 입력">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">MBTI</label>
+                                <select id="char-mbti" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border p-2">
+                                    <!-- Options filled by JS -->
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">소속 그룹</label>
+                                <select id="char-group" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border p-2">
+                                    <!-- Dynamic Options -->
+                                </select>
+                            </div>
+                            <button onclick="addCharacter()" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition shadow-sm">
+                                등록하기
+                            </button>
+                            <p class="text-xs text-gray-400 text-center mt-2">최대 30명까지 등록 가능합니다.</p>
+                        </div>
+                    </div>
+
+                    <!-- Settings Panel -->
+                    <div class="glass-panel rounded-xl p-6 border-l-4 border-indigo-400">
+                        <h3 class="text-md font-bold mb-3 text-gray-700"><i class="fas fa-cog mr-2"></i>설정</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-bold text-gray-500 uppercase">그룹 개수</span>
+                                <div class="flex items-center space-x-2">
+                                    <button onclick="changeGroupCount(-1)" class="w-6 h-6 rounded bg-gray-200 text-gray-600 hover:bg-gray-300 flex items-center justify-center font-bold text-sm">-</button>
+                                    <span id="group-count-display" class="text-sm font-bold w-4 text-center">2</span>
+                                    <button onclick="changeGroupCount(1)" class="w-6 h-6 rounded bg-gray-200 text-gray-600 hover:bg-gray-300 flex items-center justify-center font-bold text-sm">+</button>
+                            </div>
+                            </div>
+                            <div id="group-names-container" class="space-y-2">
+                                <!-- Dynamic Group Inputs -->
+                            </div>
+                            
+                            <div class="flex items-center pt-2 border-t mt-2">
+                                <input type="checkbox" id="config-use-restriction" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" checked onchange="updateConfig()">
+                                <label for="config-use-restriction" class="ml-2 block text-sm text-gray-900">
+                                    그룹 관계 제한 적용
+                                    <span class="block text-xs text-gray-500">체크 시 같은 그룹끼리는 연애 불가</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Data Management -->
+                    <div class="glass-panel rounded-xl p-6">
+                        <h3 class="text-md font-bold mb-3 text-gray-700">데이터 관리</h3>
+                        
+                        <!-- Full Data -->
+                        <div class="mb-4">
+                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">전체 데이터 (로그 포함)</h4>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="saveDataToFile()" class="bg-white border border-gray-300 text-gray-700 py-2 px-3 rounded text-sm hover:bg-gray-50">
+                                    <i class="fas fa-file-export mr-1"></i> 전체 저장
+                                </button>
+                                <label class="bg-white border border-gray-300 text-gray-700 py-2 px-3 rounded text-sm hover:bg-gray-50 text-center cursor-pointer">
+                                    <i class="fas fa-file-import mr-1"></i> 전체 불러오기
+                                    <input type="file" class="hidden" onchange="loadDataFromFile(this)" accept=".json">
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Roster Only -->
+                        <div class="mb-4 pt-4 border-t border-gray-200">
+                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">명단 데이터 (설정 포함, 로그 제외)</h4>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="saveRosterOnly()" class="bg-indigo-50 border border-indigo-200 text-indigo-700 py-2 px-3 rounded text-sm hover:bg-indigo-100">
+                                    <i class="fas fa-users mr-1"></i> 명단 내보내기
+                                </button>
+                                <label class="bg-indigo-50 border border-indigo-200 text-indigo-700 py-2 px-3 rounded text-sm hover:bg-indigo-100 text-center cursor-pointer">
+                                    <i class="fas fa-user-plus mr-1"></i> 명단 불러오기
+                                    <input type="file" class="hidden" onchange="loadRosterOnly(this)" accept=".json">
+                                </label>
+                            </div>
+                            <p class="text-[10px] text-gray-400 mt-1">* 명단 불러오기 시 기존 관계도는 유지되나, 사라진 학생의 기록은 삭제됩니다.</p>
+                        </div>
+
+                        <button onclick="resetAllData()" class="w-full mt-2 text-red-600 border border-red-200 bg-red-50 py-2 px-3 rounded text-sm hover:bg-red-100">
+                            초기화 (모든 데이터 삭제)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- List -->
+                <div class="lg:col-span-2 glass-panel rounded-xl p-6 h-full flex flex-col">
+                    <div class="flex justify-between items-center mb-4 shrink-0">
+                        <h2 class="text-lg font-bold flex items-center"><i class="fas fa-list-alt mr-2 text-indigo-500"></i> 등록된 학생 명단 (<span id="char-count">0</span>/30명)</h2>
+                    </div>
+                    <div class="overflow-hidden flex-1 relative rounded-lg border border-gray-200">
+                        <div class="absolute inset-0 overflow-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50 sticky top-0 z-10">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">이름</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">MBTI</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">그룹</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="char-list-body" class="bg-white divide-y divide-gray-200">
+                                    <!-- Generated Rows -->
+                                </tbody>
+                            </table>
+                            <div id="empty-msg" class="text-center text-gray-400 py-10 hidden">
+                                등록된 캐릭터가 없습니다.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Simulation -->
+        <div id="simulation" class="tab-content active h-full flex-col p-4 max-w-6xl mx-auto w-full overflow-y-auto">
+            <!-- Status Bar -->
+            <div class="bg-white rounded-xl shadow-sm p-4 mb-4 flex justify-between items-center shrink-0">
+                <div class="flex items-center space-x-6">
+                    <div class="text-center">
+                        <span class="block text-xs text-gray-500 uppercase">Current Date</span>
+                        <span id="current-date" class="text-xl font-bold text-indigo-700">1년차 3월 1일 (일)</span>
+                    </div>
+                    <div class="h-8 w-px bg-gray-300"></div>
+                    <div class="text-center">
+                        <span class="block text-xs text-gray-500 uppercase">Semester Status</span>
+                        <span id="semester-status" class="text-sm font-medium text-gray-700">1학기 시작</span>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <button onclick="nextTurn()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-full shadow-md transition transform hover:scale-105">
+                        <i class="fas fa-step-forward mr-2"></i> 다음 날 진행
+                    </button>
+                    <button onclick="clearLogs()" class="bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium py-2 px-4 rounded-full shadow-sm transition">
+                        <i class="fas fa-trash-alt mr-2"></i> 로그 비우기
+                    </button>
+                </div>
+            </div>
+
+            <!-- Location Map -->
+            <div class="mb-4 shrink-0">
+                <h3 class="text-gray-500 text-sm font-bold mb-2 uppercase tracking-wide flex items-center">
+                    <i class="fas fa-map-marker-alt mr-1"></i> 실시간 학생 위치
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3" id="location-container">
+                    <!-- Location Boxes Generated Here Dynamically -->
+                </div>
+            </div>
+
+            <!-- Log Area -->
+            <div class="flex-1 glass-panel rounded-xl shadow-inner p-6 overflow-hidden flex flex-col min-h-[500px] shrink-0">
+                <h3 class="text-gray-500 text-sm font-bold mb-2 uppercase tracking-wide shrink-0">Simulation Logs (Max 300)</h3>
+                <div id="log-container" class="flex-1 overflow-y-auto space-y-1 pr-2">
+                    <!-- Logs go here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Relationship Diagram -->
+        <div id="relationship" class="tab-content h-full p-4 overflow-hidden">
+            <div class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6 h-full pb-10">
+                <!-- Canvas Area -->
+                <div class="flex-1 glass-panel rounded-xl p-4 flex flex-col relative h-full min-w-0">
+                    <!-- Legend & Controls -->
+                    <div class="absolute top-2 right-2 flex flex-col items-end gap-2 z-10 pointer-events-none">
+                        
+                        <!-- Save Button -->
+                        <button onclick="saveCanvasImage()" class="bg-white/90 border border-gray-200 text-gray-600 hover:text-indigo-600 px-3 py-1.5 rounded shadow-sm text-xs font-bold pointer-events-auto transition">
+                            <i class="fas fa-camera mr-1"></i> 이미지 저장
+                        </button>
+
+                        <!-- Legend -->
+                        <div class="bg-white/90 p-2 rounded text-[10px] text-gray-600 shadow-sm border border-gray-100 max-w-[150px] pointer-events-auto">
+                            <div class="font-bold mb-1 text-center border-b pb-1 text-gray-400">필터 (클릭)</div>
+                            <div class="legend-item" onclick="toggleFilter('high_romance')" id="legend-high_romance"><span class="w-2 h-2 rounded-full bg-pink-400 mr-2 inline-block"></span> 애정 높음</div>
+                            <div class="legend-item" onclick="toggleFilter('low_romance')" id="legend-low_romance"><span class="w-2 h-2 rounded-full bg-blue-400 mr-2 inline-block"></span> 애정 낮음</div>
+                            <div class="legend-item" onclick="toggleFilter('high_friendship')" id="legend-high_friendship"><span class="w-2 h-2 rounded-full bg-green-500 mr-2 inline-block"></span> 우정 높음</div>
+                            <div class="legend-item" onclick="toggleFilter('low_friendship')" id="legend-low_friendship"><span class="w-2 h-2 rounded-full bg-red-400 mr-2 inline-block"></span> 우정 낮음</div>
+                            <div class="legend-item" onclick="toggleFilter('couple')" id="legend-couple"><span class="w-2 h-2 rounded-full bg-pink-600 mr-2 inline-block"></span> 커플</div>
+                            <div class="legend-item" onclick="toggleFilter('bestie')" id="legend-bestie"><span class="w-2 h-2 rounded-full bg-green-700 mr-2 inline-block"></span> 절친</div>
+                            <div class="mt-1 pt-1 border-t border-gray-200">
+                                <span id="canvas-status-group">그룹 제한 켜짐</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Container for canvas to allow proper resizing -->
+                    <div id="canvas-container" class="w-full h-full relative overflow-auto">
+                        <canvas id="relation-canvas" class="block"></canvas>
+                    </div>
+                    <div id="canvas-tooltip"></div>
+                </div>
+
+                <!-- Detail Table -->
+                <div class="w-full lg:w-[360px] shrink-0 glass-panel rounded-xl p-4 flex flex-col h-full">
+                    <h3 class="text-lg font-bold mb-3 text-gray-800 border-b pb-2 shrink-0">관계 세부 현황</h3>
+                    <div id="relation-detail-container" class="flex-1 overflow-y-auto min-h-0 space-y-2 pr-1">
+                        <!-- Accordion Items Populated Here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
