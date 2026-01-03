@@ -272,7 +272,7 @@ function saveCanvasImage() {
     ctx.font = 'bold 16px "Noto Sans KR", sans-serif';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
-    ctx.fillText("X @bb_uu_t", tempCanvas.width - 20, tempCanvas.height - (footerHeight / 2));
+    ctx.fillText("SchoolSimulator X @bb_uu_t", tempCanvas.width - 20, tempCanvas.height - (footerHeight / 2));
 
     // 4. Download
     const link = document.createElement('a');
@@ -1617,3 +1617,4 @@ function drawRelationshipGraph() {
     };
 
 }
+
